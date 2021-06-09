@@ -8,6 +8,6 @@ __pycache__
 .DS_Store
 .vscode
 
-artemis/app/settings/local.py
-artemis/static/
-artemis/media/
+artemis/settings/local.py
+static/
+media/
