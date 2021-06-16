@@ -1,17 +1,11 @@
 from django.conf import settings
 from django.db import models
 
-class Coordinate(models.Model):
 
-    # coordinates can be associated with a Site or a Plot
-    site = models.ForeignKey(Site, on_delete=models.CASCADE, blank=True, null=True)
-    plot = models.ForeignKey(Plot, on_delete=models.CASCADE, blank=True, null=True)
-    
-    # north, east, center, etc.
-    label = models.CharField(max_length=31, blank=True, null=True)
-    
-    latitude = models.FloatField()
-    longitude = models.FloatField()
+class Treatment(models.Model):
+
+    label = models.IntegerField()
+    description = models.CharField(max_length=128)
 
 
 class Site(models.Model):
@@ -23,12 +17,6 @@ class Site(models.Model):
 
     def __str__(self):
         return self.name
-
-
-class Treatment(models.Model):
-
-    label = models.IntegerField()
-    description = models.CharField(max_length=128)
 
 
 class Plot(models.Model):
@@ -45,6 +33,19 @@ class Plot(models.Model):
 
     EC_mean = models.FloatField(blank=True, null=True)
     EC_sd = models.FloatField(blank=True, null=True)
+
+
+class Coordinate(models.Model):
+
+    # coordinates can be associated with a Site or a Plot
+    site = models.ForeignKey(Site, on_delete=models.CASCADE, blank=True, null=True)
+    plot = models.ForeignKey(Plot, on_delete=models.CASCADE, blank=True, null=True)
+    
+    # north, east, center, etc.
+    label = models.CharField(max_length=31, blank=True, null=True)
+    
+    latitude = models.FloatField()
+    longitude = models.FloatField()
 
 
 class Replicate(models.Model):
@@ -92,7 +93,7 @@ class Geochemistry(models.Model):
 
     pH = models.FloatField(blank=True, null=True)
     EC = models.FloatField(blank=True, null=True)
-    color = models.CharField(blank=True, null=True)
+    color = models.CharField(max_length=15, blank=True, null=True)
 
     Ag = models.FloatField(blank=True, null=True)
     Al = models.FloatField(blank=True, null=True)
@@ -159,7 +160,7 @@ class Geochemistry(models.Model):
 
 class Extraction(models.Model):
 
-    site = models.ForeignKey(Site)
+    site = models.ForeignKey(Site, on_delete=models.CASCADE)
     collection_date = models.DateField(blank=True, null=True)
     time_label = models.IntegerField()
     element = models.CharField(max_length=15)
