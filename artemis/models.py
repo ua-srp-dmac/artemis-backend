@@ -84,7 +84,7 @@ class Geochemistry(models.Model):
 
     # Geochemistry can be associated with a Site OR Replicate
     site = models.ForeignKey(Site, on_delete=models.CASCADE)
-    replicate = models.ForeignKey(Replicate, on_delete=models.CASCADE)
+    replicate = models.ForeignKey(Replicate, on_delete=models.CASCADE, blank=True, null=True)
     collection_date = models.DateField(blank=True, null=True)
     time_label = models.IntegerField()
 
