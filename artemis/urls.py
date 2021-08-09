@@ -14,7 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, re_path, include
 
 
 from rest_framework import routers, serializers, viewsets
@@ -23,12 +23,15 @@ from artemis.api.api import (
     SiteViewSet,
     GeochemistryViewSet,
     PlotViewSet,
-    ReplicateViewSet
+    ReplicateViewSet,
+    SiteGeochemistryList,
+    TreatmentViewSet
 )
 
 # Routers provide an easy way of automatically determining the URL conf.
 router = routers.DefaultRouter()
 router.register(r'users', UserViewSet)
+router.register(r'treatments', TreatmentViewSet)
 router.register(r'sites', SiteViewSet)
 router.register(r'geochemistry', GeochemistryViewSet)
 router.register(r'plots', PlotViewSet)
@@ -39,5 +42,8 @@ router.register(r'replicates', ReplicateViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include(router.urls)),
-    path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
+    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+
+    re_path('^site-geochemistry/(?P<site_id>.+)/$', SiteGeochemistryList.as_view()),
 ]
+
