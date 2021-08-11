@@ -24,7 +24,7 @@ from artemis.api.api import (
     GeochemistryViewSet,
     PlotViewSet,
     ReplicateViewSet,
-    SiteGeochemistryList,
+    SiteGeochemistry,
     TreatmentViewSet
 )
 
@@ -44,6 +44,6 @@ urlpatterns = [
     path('', include(router.urls)),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 
-    re_path('^site-geochemistry/(?P<site_id>.+)/$', SiteGeochemistryList.as_view()),
+    re_path('^site-geochemistry/(?P<site_id>.+)/$', SiteGeochemistry.as_view()),
 ]
 

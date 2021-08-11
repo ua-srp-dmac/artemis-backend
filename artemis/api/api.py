@@ -81,33 +81,15 @@ class GeochemistryViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = GeochemistrySerializer
 
 
-# class SiteGeochemistryList(generics.ListAPIView):
-#     serializer_class = GeochemistrySerializer
-
-#     def get_queryset(self):
-#         """
-#         This view should return a list of all the Geochemistry entries for
-#         the site as determined by the site_id portion of the URL.
-#         """
-
-#         site_id = self.kwargs['site_id']
-#         return Geochemistry.objects.filter(site=site_id)
-
-
-class SiteGeochemistryList(views.APIView):
+class SiteGeochemistry(views.APIView):
     """
-    View to list all users in the system.
-
-    * Requires token authentication.
-    * Only admin users are able to access this view.
+    Gets site geochemistry data for all time points, treatments, elements, and depths.
     """
+
     authentication_classes = []
     permission_classes = []
 
     def get(self, request, *args, **kwargs):
-        """
-        Return a list of all users.
-        """
 
         elements = [
             'Ag',
