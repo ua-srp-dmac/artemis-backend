@@ -7,6 +7,7 @@ from urllib.parse import urlencode, quote
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
+from django.db.models import Avg
 
 from django.contrib.auth.models import User
 from artemis.models import (
@@ -172,6 +173,13 @@ class SiteGeochemistryList(views.APIView):
             'Zr',
         ]
 
+        depths = [
+            [0, 20],
+            [20, 40], 
+            [40, 60],
+            [60, 90]
+        ]
+
         site_id = kwargs['site_id']
         site_geochem = Geochemistry.objects.filter(site=site_id)
         
@@ -195,26 +203,16 @@ class SiteGeochemistryList(views.APIView):
                     treatment_name = Treatment.objects.get(id=treatment_id).description
                     response[time][treatment_name] = {}
                     treatment_replicates = replicates.filter(plot__treatment=treatment_id)
-                    print(treatment_replicates)
+                    treatment_geochem = site_geochem.filter(time_label=time, replicate__in=treatment_replicates)
 
-                    treatment_geochem = site_geochem.filter(time_label=time, replicate__in=treatment_replicates).order_by('min_depth')
-                    print(treatment_geochem)
-
-                    for replicate in treatment_replicates:
-                        pass
-
-
+                    for element in elements:
+                        response[time][treatment_name][element] = {}
                     
+                        for depth in depths:
+                            min_depth = depth[0]
+                            max_depth = depth[1]
+                            depth_str = '{}-{}'.format(min_depth, max_depth)
+                            depth_geochem = treatment_geochem.filter(min_depth=min_depth)
+                            response[time][treatment_name][element][depth_str] = depth_geochem.aggregate(Avg(element))[ element + '__avg']
 
-                
-
-
-
-        
-        
-
-        
-        
-        
-        geochem = GeochemistrySerializer(site_geochem, many=True)
-        return Response(geochem.data)
+        return JsonResponse(response, safe=False)
