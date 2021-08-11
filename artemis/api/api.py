@@ -171,7 +171,7 @@ class SiteGeochemistry(views.APIView):
         # get plots, replicates & treatments for this site
         replicate_ids = site_geochem.exclude(replicate=None).values_list('replicate', flat=True).distinct()
         replicates = Replicate.objects.filter(id__in=replicate_ids)
-        plots = Plot.objects.filter(replicate__in=replicates)
+        plots = Plot.objects.filter(site_id=site_id)
         treatment_ids = plots.values_list('treatment', flat=True).distinct()
         
         for time in time_labels:
