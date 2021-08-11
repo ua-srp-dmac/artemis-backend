@@ -16,6 +16,7 @@ from artemis.models import (
   Replicate,
   Treatment
 )
+
 from rest_framework import serializers, viewsets, generics, views
 from rest_framework.response import Response
 
@@ -107,10 +108,111 @@ class SiteGeochemistryList(views.APIView):
         Return a list of all users.
         """
 
+        elements = [
+            'Ag',
+            'Al',
+            'As',
+            'Au',
+            'Ba',
+            'Be',
+            'Bi',
+            'Br',
+            'Ca',
+            'Cd',
+            'Ce',
+            'Co',
+            'Cr',
+            'Cs',
+            'Cu',
+            'Dy',
+            'Er',
+            'Eu',
+            'Fe',
+            'Ga',
+            'Gd',
+            'Ge',
+            'Hf',
+            'Ho',
+            'In',
+            'Ir',
+            'K',
+            'La',
+            'Lu',
+            'Mg',
+            'Mn',
+            'Mo',
+            'Na',
+            'Nb',
+            'Nd',
+            'Ni',
+            'P',
+            'Pb',
+            'Pr',
+            'Rb',
+            'S',
+            'Sb',
+            'Sc',
+            'Se',
+            'Si',
+            'Sm',
+            'Sn',
+            'Sr',
+            'Ta',
+            'Tb',
+            'Th',
+            'Ti',
+            'Tl',
+            'Tm',
+            'U',
+            'V',
+            'W',
+            'Y',
+            'Yb',
+            'Zn',
+            'Zr',
+        ]
+
         site_id = kwargs['site_id']
         site_geochem = Geochemistry.objects.filter(site=site_id)
         
+        response = {}
+        time_labels = list(site_geochem.values_list('time_label', flat=True).distinct())
+
+        # get plots, replicates & treatments for this site
+        replicate_ids = site_geochem.exclude(replicate=None).values_list('replicate', flat=True).distinct()
+        replicates = Replicate.objects.filter(id__in=replicate_ids)
+        plots = Plot.objects.filter(replicate__in=replicates)
+        treatment_ids = plots.values_list('treatment', flat=True).distinct()
         
+        for time in time_labels:
+            response[time] = {}
+            time_geochem = site_geochem.filter(time_label=time)
+
+            if time == 0:
+                pass 
+            else:
+                for treatment_id in treatment_ids:
+                    treatment_name = Treatment.objects.get(id=treatment_id).description
+                    response[time][treatment_name] = {}
+                    treatment_replicates = replicates.filter(plot__treatment=treatment_id)
+                    print(treatment_replicates)
+
+                    treatment_geochem = site_geochem.filter(time_label=time, replicate__in=treatment_replicates).order_by('min_depth')
+                    print(treatment_geochem)
+
+                    for replicate in treatment_replicates:
+                        pass
+
+
+                    
+
+                
+
+
+
+        
+        
+
         
         
         

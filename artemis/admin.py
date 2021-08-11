@@ -28,7 +28,7 @@ class MinerologyAdmin(admin.ModelAdmin):
 
 class GeochemistryAdmin(admin.ModelAdmin):
     list_display = (
-        'site', 'replicate', 'collection_date', 'time_label', 'min_depth', 'max_depth'
+        'id', 'site', 'replicate', 'collection_date', 'time_label', 'min_depth', 'max_depth'
     )
 
 class ExtractionAdmin(admin.ModelAdmin):
