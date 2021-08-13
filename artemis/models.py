@@ -58,9 +58,10 @@ class Replicate(models.Model):
     EC = models.FloatField(blank=True, null=True)
 
 
-class Minerology(models.Model):
+class Mineralogy(models.Model):
 
     site = models.ForeignKey(Site, on_delete=models.CASCADE)
+    replicate = models.ForeignKey(Replicate, on_delete=models.CASCADE, blank=True, null=True)
     collection_date = models.DateField(blank=True, null=True)
     time_label = models.IntegerField()
 
@@ -78,7 +79,7 @@ class Minerology(models.Model):
     melanternite = models.FloatField(blank=True, null=True)
     ankerite = models.FloatField(blank=True, null=True)
     siderite = models.FloatField(blank=True, null=True)
-    amorphus = models.FloatField(blank=True, null=True)
+    amorphous = models.FloatField(blank=True, null=True)
   
 class Geochemistry(models.Model):
 
