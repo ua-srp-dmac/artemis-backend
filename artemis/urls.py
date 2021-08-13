@@ -25,7 +25,8 @@ from artemis.api.api import (
     PlotViewSet,
     ReplicateViewSet,
     SiteGeochemistry,
-    TreatmentViewSet
+    TreatmentViewSet,
+    SiteMineralogy
 )
 
 # Routers provide an easy way of automatically determining the URL conf.
@@ -45,5 +46,6 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 
     re_path('^site-geochemistry/(?P<site_id>.+)/$', SiteGeochemistry.as_view()),
+    re_path('^site-mineralogy/(?P<site_id>.+)/$', SiteMineralogy.as_view()),
 ]
 

@@ -15,7 +15,8 @@ from artemis.models import (
   Geochemistry,
   Plot,
   Replicate,
-  Treatment
+  Treatment,
+  Mineralogy
 )
 
 from rest_framework import serializers, viewsets, generics, views
@@ -79,6 +80,7 @@ class GeochemistrySerializer(serializers.ModelSerializer):
 class GeochemistryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Geochemistry.objects.all()
     serializer_class = GeochemistrySerializer
+
 
 
 class SiteGeochemistry(views.APIView):
@@ -155,12 +157,30 @@ class SiteGeochemistry(views.APIView):
             'Zr',
         ]
 
+        depths_time0 = [
+            [0, 5],
+            [5, 15],
+            [15, 25], 
+            [25, 35],
+            [35, 38],
+            [38, 54],
+            [180, 183],
+        ]
+
         depths = [
             [0, 20],
             [20, 40], 
             [40, 60],
             [60, 90]
         ]
+
+        depths_mapping = {
+            '0-20': [[0, 5], [5, 15], [15, 25]],
+            '20-40': [[25, 35], [35, 38]],
+            '40-60': [[38, 54]],
+            '60-90': [],
+        }
+
 
         site_id = kwargs['site_id']
         site_geochem = Geochemistry.objects.filter(site=site_id)
@@ -176,25 +196,137 @@ class SiteGeochemistry(views.APIView):
         
         for time in time_labels:
             response[time] = {}
-            time_geochem = site_geochem.filter(time_label=time)
 
-            if time == 0:
-                pass 
-            else:
-                for treatment_id in treatment_ids:
-                    treatment_name = Treatment.objects.get(id=treatment_id).description
-                    response[time][treatment_name] = {}
-                    treatment_replicates = replicates.filter(plot__treatment=treatment_id)
-                    treatment_geochem = site_geochem.filter(time_label=time, replicate__in=treatment_replicates)
+            for treatment_id in treatment_ids:
+                treatment_name = Treatment.objects.get(id=treatment_id).description
+                response[time][treatment_name] = {}
+                response[time]['raw'] = {}
+                treatment_replicates = replicates.filter(plot__treatment=treatment_id)
+                treatment_geochem = site_geochem.filter(time_label=time, replicate__in=treatment_replicates)
 
-                    for element in elements:
-                        response[time][treatment_name][element] = {}
-                    
-                        for depth in depths:
+                for element in elements:
+                    response[time][treatment_name][element] = {}
+
+                    if time == 0:
+                        response[time]['raw'][element] = {}
+                        for depth in depths_time0:
                             min_depth = depth[0]
                             max_depth = depth[1]
                             depth_str = '{}-{}'.format(min_depth, max_depth)
+                            depth_geochem = site_geochem.get(min_depth=min_depth, time_label=0)
+                            response[time]['raw'][element][depth_str] = getattr(depth_geochem, element)
+                
+                    for depth in depths:
+                        min_depth = depth[0]
+                        max_depth = depth[1]
+                        depth_str = '{}-{}'.format(min_depth, max_depth)
+
+                        if time == 0:
+                            approx_depths = depths_mapping[depth_str]
+                            approx_mins = [item[0] for item in approx_depths]
+                            depth_geochem = site_geochem.filter(time_label=time, min_depth__in=approx_mins)
+                            response[time][treatment_name][element][depth_str] = depth_geochem.aggregate(Avg(element))[ element + '__avg']
+                        else:
                             depth_geochem = treatment_geochem.filter(min_depth=min_depth)
                             response[time][treatment_name][element][depth_str] = depth_geochem.aggregate(Avg(element))[ element + '__avg']
+
+        return JsonResponse(response, safe=False)
+
+class SiteMineralogy(views.APIView):
+    """
+    Gets site geochemistry data for all time points, treatments, elements, and depths.
+    """
+
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request, *args, **kwargs):
+
+        minerals = [
+            'quartz',
+            'plagioclase',
+            'illite',
+            'chlorite',
+            'kaolinite',
+            'pyrite',
+            'gypsum',
+            'jarosite',
+            'melanternite',
+            'ankerite',
+            'siderite',
+            'amorphous',
+        ]
+        
+        depths_time0 = [
+            [0, 5],
+            [5, 15],
+            [15, 25], 
+            [25, 35],
+            [35, 38],
+            [38, 54],
+            [180, 183],
+        ]
+
+        depths = [
+            [0, 20],
+            [20, 40], 
+            [40, 60],
+            [60, 90]
+        ]
+
+        depths_mapping = {
+            '0-20': [[0, 5], [5, 15], [15, 25]],
+            '20-40': [[25, 35], [35, 38]],
+            '40-60': [[38, 54]],
+            '60-90': [],
+        }
+
+        site_id = kwargs['site_id']
+        site_mineralogy = Mineralogy.objects.filter(site=site_id)
+        
+        response = {}
+        time_labels = list(site_mineralogy.values_list('time_label', flat=True).distinct())
+
+        # get plots, replicates & treatments for this site
+        replicate_ids = site_mineralogy.exclude(replicate=None).values_list('replicate', flat=True).distinct()
+        replicates = Replicate.objects.filter(id__in=replicate_ids)
+        plots = Plot.objects.filter(site_id=site_id)
+        treatment_ids = plots.values_list('treatment', flat=True).distinct()
+        
+        for time in time_labels:
+            response[time] = {}
+
+            for treatment_id in treatment_ids:
+                treatment_name = Treatment.objects.get(id=treatment_id).description
+                response[time][treatment_name] = {}
+                response[time]['raw'] = {}
+                treatment_replicates = replicates.filter(plot__treatment=treatment_id)
+                treatment_mineralogy = site_mineralogy.filter(time_label=time, replicate__in=treatment_replicates)
+
+                for mineral in minerals:
+                    response[time][treatment_name][mineral] = {}
+                    
+                    if time == 0:
+                        response[time]['raw'][mineral] = {}
+                        for depth in depths_time0:
+                            min_depth = depth[0]
+                            max_depth = depth[1]
+                            depth_str = '{}-{}'.format(min_depth, max_depth)
+                            depth_mineralogy = site_mineralogy.get(min_depth=min_depth, time_label=0)
+                            response[time]['raw'][mineral][depth_str] = getattr(depth_mineralogy, mineral)
+
+                    for depth in depths:
+                        min_depth = depth[0]
+                        max_depth = depth[1]
+                        depth_str = '{}-{}'.format(min_depth, max_depth)
+
+                        if time == 0:
+                            approx_depths = depths_mapping[depth_str]
+                            approx_mins = [item[0] for item in approx_depths]
+                            depth_mineralogy = site_mineralogy.filter(time_label=time, min_depth__in=approx_mins)
+                            response[time][treatment_name][mineral][depth_str] = depth_mineralogy.aggregate(Avg(mineral))[ mineral + '__avg']
+                        else:
+                            depth_mineralogy = treatment_mineralogy.filter(min_depth=min_depth)
+                            response[time][treatment_name][mineral][depth_str] = depth_mineralogy.aggregate(Avg(mineral))[ mineral + '__avg']
 
         return JsonResponse(response, safe=False)
