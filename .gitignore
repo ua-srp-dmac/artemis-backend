@@ -11,3 +11,5 @@ __pycache__
 artemis/settings/local.py
 static/
 media/
+
+django_cache

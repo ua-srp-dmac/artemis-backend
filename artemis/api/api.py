@@ -8,8 +8,10 @@ from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from django.db.models import Avg
+from django.core.cache import cache 
 
 from django.contrib.auth.models import User
+from django.shortcuts import render
 from artemis.models import (
   Site,
   Geochemistry,
@@ -92,6 +94,12 @@ class GeochemistryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Geochemistry.objects.all()
     serializer_class = GeochemistrySerializer
 
+class SiteGeochemistryCached(views.APIView):
+
+    def get(self, request, *args, **kwargs):
+
+        json_data = cache.get('site-geochem')
+        return JsonResponse(json_data, safe=False)
 
 
 class SiteGeochemistry(views.APIView):
@@ -240,6 +248,8 @@ class SiteGeochemistry(views.APIView):
                         else:
                             depth_geochem = treatment_geochem.filter(min_depth=min_depth)
                             response[time][treatment_name][element][depth_str] = depth_geochem.aggregate(Avg(element))[ element + '__avg']
+
+        cache.set('site-geochem', response)
 
         return JsonResponse(response, safe=False)
 
