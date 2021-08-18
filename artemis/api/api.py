@@ -16,11 +16,14 @@ from artemis.models import (
   Plot,
   Replicate,
   Treatment,
-  Mineralogy
+  Mineralogy,
+  Coordinate
 )
 
 from rest_framework import serializers, viewsets, generics, views
 from rest_framework.response import Response
+
+
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -42,10 +45,18 @@ class TreatmentViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Treatment.objects.all()
     serializer_class = TreatmentSerializer
 
+class CoordinateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Coordinate
+        fields = ['site', 'latitude', 'longitude']
+
 class SiteSerializer(serializers.ModelSerializer):
+    
+    coordinates = CoordinateSerializer(many=True, read_only=True, allow_null=True)
+    
     class Meta:
         model = Site
-        fields = ['id', 'name']
+        fields = ['id', 'name', 'coordinates']
 
 class SiteViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Site.objects.all()

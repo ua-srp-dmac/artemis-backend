@@ -35,19 +35,6 @@ class Plot(models.Model):
     EC_sd = models.FloatField(blank=True, null=True)
 
 
-class Coordinate(models.Model):
-
-    # coordinates can be associated with a Site or a Plot
-    site = models.ForeignKey(Site, on_delete=models.CASCADE, blank=True, null=True)
-    plot = models.ForeignKey(Plot, on_delete=models.CASCADE, blank=True, null=True)
-    
-    # north, east, center, etc.
-    label = models.CharField(max_length=31, blank=True, null=True)
-    
-    latitude = models.FloatField()
-    longitude = models.FloatField()
-
-
 class Replicate(models.Model):
 
     plot = models.ForeignKey(Plot, on_delete=models.CASCADE)
@@ -56,6 +43,19 @@ class Replicate(models.Model):
     pH = models.FloatField(blank=True, null=True)
     pHCa = models.FloatField(blank=True, null=True)
     EC = models.FloatField(blank=True, null=True)
+
+
+class Coordinate(models.Model):
+
+    # coordinates can be associated with a Site or a Plot
+    site = models.ForeignKey(Site, on_delete=models.CASCADE, blank=True, null=True)
+    replicate = models.ForeignKey(Replicate, on_delete=models.CASCADE, blank=True, null=True)
+    
+    # north, east, center, etc.
+    label = models.CharField(max_length=31, blank=True, null=True)
+    
+    latitude = models.FloatField()
+    longitude = models.FloatField()
 
 
 class Mineralogy(models.Model):

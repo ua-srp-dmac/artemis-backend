@@ -18,7 +18,7 @@ class ReplicateAdmin(admin.ModelAdmin):
 
 class CoordinateAdmin(admin.ModelAdmin):
     list_display = (
-        'site', 'plot', 'latitude', 'longitude', 'label'
+        'site', 'replicate', 'latitude', 'longitude', 'label'
     )
 
 class MineralogyAdmin(admin.ModelAdmin):
