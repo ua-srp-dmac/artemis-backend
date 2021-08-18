@@ -101,6 +101,13 @@ class SiteGeochemistryCached(views.APIView):
         json_data = cache.get('site-geochem')
         return JsonResponse(json_data, safe=False)
 
+class SiteMineralogyCached(views.APIView):
+
+    def get(self, request, *args, **kwargs):
+
+        json_data = cache.get('site-mineralogy')
+        return JsonResponse(json_data, safe=False)
+
 
 class SiteGeochemistry(views.APIView):
     """
@@ -349,5 +356,7 @@ class SiteMineralogy(views.APIView):
                         else:
                             depth_mineralogy = treatment_mineralogy.filter(min_depth=min_depth)
                             response[time][treatment_name][mineral][depth_str] = depth_mineralogy.aggregate(Avg(mineral))[ mineral + '__avg']
+
+        cache.set('site-mineralogy', response)
 
         return JsonResponse(response, safe=False)
