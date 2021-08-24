@@ -11,6 +11,8 @@ class Treatment(models.Model):
 class Site(models.Model):
 
     name = models.CharField(max_length=128)
+    latitude = models.FloatField(blank=True, null=True)
+    longitude = models.FloatField(blank=True, null=True)
 
     def __unicode__(self):
         return u'%s' % self.name
@@ -25,38 +27,15 @@ class Plot(models.Model):
     label = models.IntegerField()
     treatment = models.ForeignKey(Treatment, on_delete=models.CASCADE)
 
-    pH_mean = models.FloatField(blank=True, null=True)
-    pH_sd = models.FloatField(blank=True, null=True)
-
-    pHCa_mean = models.FloatField(blank=True, null=True)
-    pHCa_sd = models.FloatField(blank=True, null=True)
-
-    EC_mean = models.FloatField(blank=True, null=True)
-    EC_sd = models.FloatField(blank=True, null=True)
-
 
 class Replicate(models.Model):
 
     plot = models.ForeignKey(Plot, on_delete=models.CASCADE)
     label = models.IntegerField()
 
-    pH = models.FloatField(blank=True, null=True)
-    pHCa = models.FloatField(blank=True, null=True)
-    EC = models.FloatField(blank=True, null=True)
-
-
-class Coordinate(models.Model):
-
-    # coordinates can be associated with a Site or a Plot
-    site = models.ForeignKey(Site, on_delete=models.CASCADE, blank=True, null=True)
-    replicate = models.ForeignKey(Replicate, on_delete=models.CASCADE, blank=True, null=True)
+    latitude = models.FloatField(blank=True, null=True)
+    longitude = models.FloatField(blank=True, null=True)
     
-    # north, east, center, etc.
-    label = models.CharField(max_length=31, blank=True, null=True)
-    
-    latitude = models.FloatField()
-    longitude = models.FloatField()
-
 
 class Mineralogy(models.Model):
 
@@ -93,6 +72,7 @@ class Geochemistry(models.Model):
     max_depth = models.IntegerField()
 
     pH = models.FloatField(blank=True, null=True)
+    pHCa = models.FloatField(blank=True, null=True)
     EC = models.FloatField(blank=True, null=True)
     color = models.CharField(max_length=15, blank=True, null=True)
 

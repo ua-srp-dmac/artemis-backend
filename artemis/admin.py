@@ -16,11 +16,6 @@ class ReplicateAdmin(admin.ModelAdmin):
         'plot', 'label'
     )
 
-class CoordinateAdmin(admin.ModelAdmin):
-    list_display = (
-        'site', 'replicate', 'latitude', 'longitude', 'label'
-    )
-
 class MineralogyAdmin(admin.ModelAdmin):
     list_display = (
         'site', 'collection_date', 'time_label', 'min_depth', 'max_depth'
@@ -40,7 +35,6 @@ class ExtractionAdmin(admin.ModelAdmin):
 admin.site.register(Site, SiteAdmin)
 admin.site.register(Plot, PlotAdmin)
 admin.site.register(Replicate, ReplicateAdmin)
-admin.site.register(Coordinate, CoordinateAdmin)
 admin.site.register(Mineralogy, MineralogyAdmin)
 admin.site.register(Geochemistry, GeochemistryAdmin)
 admin.site.register(Extraction, ExtractionAdmin)

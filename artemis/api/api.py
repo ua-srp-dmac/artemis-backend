@@ -19,7 +19,6 @@ from artemis.models import (
   Replicate,
   Treatment,
   Mineralogy,
-  Coordinate
 )
 
 from rest_framework import serializers, viewsets, generics, views
@@ -47,14 +46,8 @@ class TreatmentViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Treatment.objects.all()
     serializer_class = TreatmentSerializer
 
-class CoordinateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Coordinate
-        fields = ['site', 'latitude', 'longitude']
 
 class SiteSerializer(serializers.ModelSerializer):
-    
-    coordinates = CoordinateSerializer(many=True, read_only=True, allow_null=True)
     
     class Meta:
         model = Site
