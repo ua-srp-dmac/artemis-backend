@@ -142,6 +142,7 @@ class Geochemistry(models.Model):
 class Extraction(models.Model):
 
     site = models.ForeignKey(Site, on_delete=models.CASCADE)
+    replicate = models.ForeignKey(Replicate, on_delete=models.CASCADE, blank=True, null=True)
     collection_date = models.DateField(blank=True, null=True)
     time_label = models.IntegerField()
     element = models.CharField(max_length=15)

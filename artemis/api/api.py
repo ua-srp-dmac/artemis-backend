@@ -19,6 +19,7 @@ from artemis.models import (
   Replicate,
   Treatment,
   Mineralogy,
+  Extraction
 )
 
 from rest_framework import serializers, viewsets, generics, views
@@ -246,7 +247,7 @@ class SiteGeochemistry(views.APIView):
                             depth_geochem = site_geochem.filter(time_label=time, min_depth__in=approx_mins)
                             response[time][treatment_name][element][depth_str] = depth_geochem.aggregate(Avg(element))[ element + '__avg']
                         else:
-                            depth_geochem = treatment_geochem.filter(min_depth=min_depth)
+                            depth_geochem = treatment_geochem.filter(time_label=time, min_depth=min_depth)
                             response[time][treatment_name][element][depth_str] = depth_geochem.aggregate(Avg(element))[ element + '__avg']
 
         cache.set('site-geochem', response)
@@ -351,5 +352,116 @@ class SiteMineralogy(views.APIView):
                             response[time][treatment_name][mineral][depth_str] = depth_mineralogy.aggregate(Avg(mineral))[ mineral + '__avg']
 
         cache.set('site-mineralogy', response)
+
+        return JsonResponse(response, safe=False)
+
+
+class SiteExtractions(views.APIView):
+    """
+    Gets site geochemistry data for all time points, treatments, elements, and depths.
+    """
+
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request, *args, **kwargs):
+
+        elements = [
+            'Al',
+            'As',
+            'Ca',   
+            'Cr',    
+            'Fe',
+            'K',     
+            'Mg',
+            'Mn',     
+            'Pb',
+            'Ti',
+            'Zn',
+        ]
+
+        solvents = [
+            'H20',
+            'AmNO3',
+            'AAc',
+            'PO4',
+            'AAO',
+            'CDB',
+        ]
+
+        depths_time0 = [
+            [0, 5],
+            [5, 15],
+            [15, 25], 
+            [25, 35],
+            [35, 38],
+            [38, 54],
+            [180, 183],
+        ]
+
+        depths = [
+            [0, 20],
+            [20, 40], 
+            [40, 60],
+            [60, 90]
+        ]
+
+        depths_mapping = {
+            '0-20': [[0, 5], [5, 15], [15, 25]],
+            '20-40': [[25, 35], [35, 38]],
+            '40-60': [[38, 54]],
+            '60-90': [],
+        }
+
+        site_id = kwargs['site_id']
+        site_extractions = Extraction.objects.filter(site=site_id)
+        
+        response = {}
+        time_labels = list(site_extractions.values_list('time_label', flat=True).distinct())
+
+        # get plots, replicates & treatments for this site
+        replicate_ids = site_extractions.exclude(replicate=None).values_list('replicate', flat=True).distinct()
+        replicates = Replicate.objects.filter(id__in=replicate_ids)
+        plots = Plot.objects.filter(site_id=site_id)
+        treatment_ids = plots.values_list('treatment', flat=True).distinct()
+        
+        response['raw'] = {}
+        for time in time_labels:
+            response[time] = {}
+
+            for element in elements:
+                response[time][element] = {}
+                response['raw'][element] = {}
+
+                for solvent in solvents:
+
+                    response[time][element][solvent] = {}
+
+                    if time == 0:
+                        
+                        response['raw'][element][solvent] = {}
+
+                        for depth in depths_time0:
+                            min_depth = depth[0]
+                            max_depth = depth[1]
+                            depth_str = '{}-{}'.format(min_depth, max_depth)
+                            depth_extraction = site_extractions.get(min_depth=min_depth, time_label=0, element=element)
+                            response['raw'][element][solvent][depth_str] = getattr(depth_extraction, solvent)
+                
+                    for depth in depths:
+                        min_depth = depth[0]
+                        max_depth = depth[1]
+                        depth_str = '{}-{}'.format(min_depth, max_depth)
+
+                        if time == 0:
+                            approx_depths = depths_mapping[depth_str]
+                            approx_mins = [item[0] for item in approx_depths]
+                            depth_extractions = site_extractions.filter(time_label=time, min_depth__in=approx_mins, element=element)
+                            response[time][element][solvent][depth_str] = depth_extractions.aggregate(Avg(solvent))[ solvent + '__avg']
+                        else:
+                            depth_extractions = site_extractions.filter(time_label=time, min_depth=min_depth, element=element)
+                            response[time][element][treatment_name][depth_str] = depth_extractions.aggregate(Avg(solvent))[ solvent + '__avg']
+
+        cache.set('site-extraction', response)
 
         return JsonResponse(response, safe=False)
