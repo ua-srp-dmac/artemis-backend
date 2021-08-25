@@ -103,6 +103,14 @@ class SiteMineralogyCached(views.APIView):
         return JsonResponse(json_data, safe=False)
 
 
+class SiteExtractionsCached(views.APIView):
+
+    def get(self, request, *args, **kwargs):
+
+        json_data = cache.get('site-extractions')
+        return JsonResponse(json_data, safe=False)
+
+
 class SiteGeochemistry(views.APIView):
     """
     Gets site geochemistry data for all time points, treatments, elements, and depths.
@@ -462,6 +470,6 @@ class SiteExtractions(views.APIView):
                             depth_extractions = site_extractions.filter(time_label=time, min_depth=min_depth, element=element)
                             response[time][element][treatment_name][depth_str] = depth_extractions.aggregate(Avg(solvent))[ solvent + '__avg']
 
-        cache.set('site-extraction', response)
+        cache.set('site-extractions', response)
 
         return JsonResponse(response, safe=False)
