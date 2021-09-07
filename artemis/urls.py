@@ -31,7 +31,8 @@ from artemis.api.api import (
     SiteMineralogyCached,
     SiteExtractions,
     SiteExtractionsCached,
-    SiteReplicates
+    SiteReplicates,
+    SiteGeochemPoints
 )
 
 # Routers provide an easy way of automatically determining the URL conf.
@@ -60,5 +61,6 @@ urlpatterns = [
     re_path('^site-extractions-cache/(?P<site_id>.+)/$', SiteExtractionsCached.as_view()),
 
     re_path('^site-replicates/(?P<site_id>.+)/$', SiteReplicates.as_view()),
+    re_path('^site-geochem-points/(?P<site_id>.+)/$', SiteGeochemPoints.as_view()),
 ]
 

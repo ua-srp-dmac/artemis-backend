@@ -26,6 +26,69 @@ from rest_framework import serializers, viewsets, generics, views
 from rest_framework.response import Response
 
 
+elements = [
+    'Ag',
+    'Al',
+    'As',
+    'Au',
+    'Ba',
+    'Be',
+    'Bi',
+    'Br',
+    'Ca',
+    'Cd',
+    'Ce',
+    'Co',
+    'Cr',
+    'Cs',
+    'Cu',
+    'Dy',
+    'Er',
+    'Eu',
+    'Fe',
+    'Ga',
+    'Gd',
+    'Ge',
+    'Hf',
+    'Ho',
+    'In',
+    'Ir',
+    'K',
+    'La',
+    'Lu',
+    'Mg',
+    'Mn',
+    'Mo',
+    'Na',
+    'Nb',
+    'Nd',
+    'Ni',
+    'P',
+    'Pb',
+    'Pr',
+    'Rb',
+    'S',
+    'Sb',
+    'Sc',
+    'Se',
+    'Si',
+    'Sm',
+    'Sn',
+    'Sr',
+    'Ta',
+    'Tb',
+    'Th',
+    'Ti',
+    'Tl',
+    'Tm',
+    'U',
+    'V',
+    'W',
+    'Y',
+    'Yb',
+    'Zn',
+    'Zr',
+]
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -122,6 +185,34 @@ class SiteReplicates(generics.ListAPIView):
         queryset = Replicate.objects.filter(plot__site_id=site_id)
         return queryset
 
+
+class SiteGeochemPoints(views.APIView):
+
+    def get(self, request, *args, **kwargs):
+
+        site_id = kwargs['site_id']
+        site_geochem = Geochemistry.objects.filter(site=site_id)
+
+        points = []
+
+        for geochem in site_geochem:
+
+            for element in elements:
+                point = {}
+                point['element'] = element,
+                point['element_amount'] = getattr(geochem, element)
+                point['depth'] =  str(geochem.min_depth) + '-' + str(geochem.max_depth),
+                point['time'] = geochem.time_label
+                point['treatment'] = geochem.replicate.plot.treatment.label if geochem.replicate else None
+                points.append(point)
+        
+        response = {
+            'points': points
+        }
+
+        cache.set('site-geochem-points', response)
+
+        return JsonResponse(response, safe=False)
 
 class SiteGeochemistry(views.APIView):
     """
@@ -273,6 +364,8 @@ class SiteGeochemistry(views.APIView):
         cache.set('site-geochem', response)
 
         return JsonResponse(response, safe=False)
+
+
 
 class SiteMineralogy(views.APIView):
     """
