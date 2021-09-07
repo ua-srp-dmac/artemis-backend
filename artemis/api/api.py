@@ -52,7 +52,7 @@ class SiteSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Site
-        fields = ['id', 'name', 'coordinates']
+        fields = ['id', 'name', 'latitude', 'longitude']
 
 class SiteViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Site.objects.all()
@@ -109,6 +109,18 @@ class SiteExtractionsCached(views.APIView):
 
         json_data = cache.get('site-extractions')
         return JsonResponse(json_data, safe=False)
+
+
+class SiteReplicates(generics.ListAPIView):
+
+    serializer_class = ReplicateSerializer
+
+    def get_queryset(self):
+        
+        site_id = self.kwargs.get('site_id', None)
+
+        queryset = Replicate.objects.filter(plot__site_id=site_id)
+        return queryset
 
 
 class SiteGeochemistry(views.APIView):
