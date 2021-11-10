@@ -4,6 +4,9 @@ import time
 import os
 from urllib.parse import urlencode, quote
 
+from latex2sympy2 import latex2sympy, latex2latex
+from sympy.concrete.summations import Sum
+
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
@@ -204,6 +207,7 @@ class SiteGeochemPoints(views.APIView):
                 point['depth'] =  str(geochem.min_depth) + '-' + str(geochem.max_depth),
                 point['time'] = geochem.time_label
                 point['treatment'] = geochem.replicate.plot.treatment.label if geochem.replicate else None
+                point['replicate'] = geochem.replicate.id if geochem.replicate else None
                 points.append(point)
         
         response = {
@@ -576,5 +580,45 @@ class SiteExtractions(views.APIView):
                             response[time][element][treatment_name][depth_str] = depth_extractions.aggregate(Avg(solvent))[ solvent + '__avg']
 
         cache.set('site-extractions', response)
+
+        return JsonResponse(response, safe=False)
+    
+
+class LatexCalculator(views.APIView):
+
+    def get(self, request, *args, **kwargs):
+
+        variable_vector = json.loads(request.query_params['variableVector'])
+        latex = request.query_params['latex']
+        max_length = request.query_params['maxVectorLength']
+        solution_var = request.query_params['solutionVar']
+
+        sympy = latex2sympy(latex)
+        solutions = []
+
+        for i in range(0, int(max_length)):
+            
+            result = {}
+            subs = {}
+
+            for var_name in variable_vector:
+                vector = variable_vector[var_name]
+                print(vector)
+
+                if len(vector) == 1:
+                    result[var_name] = vector[0]
+                    subs[var_name] = vector[0]['element_amount']
+                else:
+                    result[var_name] = vector[i]
+                    subs[var_name] = vector[i]['element_amount']
+            
+            result[solution_var] = {}
+            sympy_result = sympy.evalf(subs=subs)
+            result[solution_var]['element_amount'] = str(sympy_result)
+            solutions.append(result)
+    
+        response = {
+            'solution': solutions
+        }
 
         return JsonResponse(response, safe=False)
