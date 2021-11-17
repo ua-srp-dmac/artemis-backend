@@ -600,7 +600,7 @@ class LatexCalculator(views.APIView):
         var_sympy_objects = {}
 
         for var_name in variable_vector:
-            var_sympy_objects[var_name] = symbols(var_name)
+            var_sympy_objects[var_name] = IndexedBase(var_name + "_vec")
             vector = variable_vector[var_name]
             vector_array = []
 
@@ -647,20 +647,33 @@ class LatexCalculator(views.APIView):
         print(sum_vars)
         atoms = sympy.atoms(Symbol)
 
+        sum_var_symbols = {}
+        for var in sum_vars:
+            sum_var_symbols[var] = symbols(str(var))
+        
+        # whatever = IndexedBase("B_vec")
+        i = symbols("i")
+        j = symbols("j")
+        k = symbols("k")
 
         for atom in atoms:
- 
-            print(atom)
         
             for var_name in variable_vector:
-            
-                if str(atom).startswith(var_name + "_"):
+                atom_str = str(atom)
+                if atom_str.startswith(var_name + "_{"):
                     print(atom)
-
+                    subscript = atom_str[atom_str.find("{")+1:atom_str.find("}")]
+                    print(subscript)
+                    # for sum_var in sum_vars:
+                    #     subscript.replace(sum_var, sum_var_symbols[sum_var])
+                    sympy = sympy.subs(atom_str, var_sympy_objects[var_name][subscript]) 
+                elif atom_str.startswith(var_name + "_"):
+                    subscript = atom_str[2:]
+                    sympy = sympy.subs(atom_str, var_sympy_objects[var_name][subscript]) 
         # vector_subs = sympy.find("B_i") 
         # print(vector_subs)       
-        sympy = sympy.subs("B_i", whatever[i]) 
-        # print(sympy)
+        # sympy = sympy.subs("B_i", whatever[i]) 
+        print(sympy)
 
         
         
@@ -687,10 +700,11 @@ class LatexCalculator(views.APIView):
                     result[var_name] = vector[i]
                     subs[var_name] = vector[i]['element_amount']
             
-            subs["B_vec"] = var_vectors_clean[var_name]
+            subs["B_vec"] = var_vectors_clean["B"]
 
             result[solution_var] = {}
             sympy_result = sympy.evalf(subs=subs)
+            print(sympy_result)
             result[solution_var]['element_amount'] = str(sympy_result)
             solutions.append(result)
     
