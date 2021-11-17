@@ -5,7 +5,7 @@ import os
 from urllib.parse import urlencode, quote
 
 from latex2sympy2 import latex2sympy, latex2latex
-from sympy.concrete.summations import Sum
+from sympy import *
 
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -593,7 +593,79 @@ class LatexCalculator(views.APIView):
         max_length = request.query_params['maxVectorLength']
         solution_var = request.query_params['solutionVar']
 
-        sympy = latex2sympy(latex)
+        latex_clean = latex.replace("\\ ", "")
+        # latex_clean = latex_clean.replace("B_{i}", "B[i]")
+
+        var_vectors_clean = {}
+        var_sympy_objects = {}
+
+        for var_name in variable_vector:
+            var_sympy_objects[var_name] = symbols(var_name)
+            vector = variable_vector[var_name]
+            vector_array = []
+
+            for element in vector:
+                vector_array.append(element['element_amount'])
+            
+            var_vectors_clean[var_name] = Array(vector_array)
+
+
+        print(var_vectors_clean)
+        
+        print(latex_clean)
+        sympy = latex2sympy(latex_clean)
+        print(sympy)
+        whatever = IndexedBase("B_vec")
+        i = symbols("i")
+
+        sums = sympy.find(Sum)
+        products = sympy.find(Product)
+
+        print(sums)
+        print(products)
+        
+        sum_vars = []
+        
+        for s in sums:
+            
+            s_args = s.args
+            for i in range(len(s_args)):
+                if i > 0:
+                    sum_var = s_args[i][0]
+                    if sum_var not in sum_vars:
+                        sum_vars.append(sum_var)
+        
+        for s in products:
+            print(s)
+            s_args = s.args
+            for i in range(len(s_args)):
+                if i > 0:
+                    sum_var = s_args[i][0]
+                    if sum_var not in sum_vars:
+                        sum_vars.append(sum_var)
+
+        print(sum_vars)
+        atoms = sympy.atoms(Symbol)
+
+
+        for atom in atoms:
+ 
+            print(atom)
+        
+            for var_name in variable_vector:
+            
+                if str(atom).startswith(var_name + "_"):
+                    print(atom)
+
+        # vector_subs = sympy.find("B_i") 
+        # print(vector_subs)       
+        sympy = sympy.subs("B_i", whatever[i]) 
+        # print(sympy)
+
+        
+        
+        
+        
         solutions = []
 
         for i in range(0, int(max_length)):
@@ -602,6 +674,9 @@ class LatexCalculator(views.APIView):
             subs = {}
 
             for var_name in variable_vector:
+            
+
+                
                 vector = variable_vector[var_name]
                 print(vector)
 
@@ -612,6 +687,8 @@ class LatexCalculator(views.APIView):
                     result[var_name] = vector[i]
                     subs[var_name] = vector[i]['element_amount']
             
+            subs["B_vec"] = var_vectors_clean[var_name]
+
             result[solution_var] = {}
             sympy_result = sympy.evalf(subs=subs)
             result[solution_var]['element_amount'] = str(sympy_result)
