@@ -33,7 +33,8 @@ from artemis.api.api import (
     SiteExtractionsCached,
     SiteReplicates,
     SiteGeochemPoints,
-    LatexCalculator
+    LatexCalculator,
+    SimpleCalculator
 )
 
 # Routers provide an easy way of automatically determining the URL conf.
@@ -65,5 +66,6 @@ urlpatterns = [
     re_path('^site-geochem-points/(?P<site_id>.+)/$', SiteGeochemPoints.as_view()),
 
     re_path('^latex-calculator', LatexCalculator.as_view()),
+    re_path('^simple-calculator', SimpleCalculator.as_view()),
 ]
 
