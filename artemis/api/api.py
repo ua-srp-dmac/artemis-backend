@@ -715,7 +715,7 @@ class SimpleCalculator(views.APIView):
 
         # remove spaces from latex string
         latex_clean = latex.replace("\\ ", "")
-        latex_clean = latex_clean.replace("=", "==")
+        latex_clean = latex_clean.replace("^", "**")
         print(latex_clean)
         
         # vector data only
@@ -734,7 +734,10 @@ class SimpleCalculator(views.APIView):
             var_vectors_clean[var_name] = Array(vector_array)
 
         print(latex_clean)
-        sympy = latex2sympy(latex_clean)
+        print("HEREEEEEE")
+        print(latex_clean.split("="))
+        sympy = Eq(*map(parse_expr, latex_clean.split("=")))
+        # sympy = latex2sympy(latex_clean)
         print(sympy)
  
         # search for sums or products within expression
