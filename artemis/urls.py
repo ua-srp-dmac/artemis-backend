@@ -33,6 +33,9 @@ from artemis.api.api import (
     SiteExtractionsCached,
     SiteReplicates,
     SiteGeochemPoints,
+)
+
+from artemis.api.calculator import (
     LatexCalculator,
     SimpleCalculator
 )
