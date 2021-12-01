@@ -37,6 +37,8 @@ from artemis.api.api import (
     SimpleCalculator
 )
 
+from artemis.api.auth import *
+
 # Routers provide an easy way of automatically determining the URL conf.
 router = routers.DefaultRouter()
 router.register(r'users', UserViewSet)
@@ -67,5 +69,10 @@ urlpatterns = [
 
     re_path('^latex-calculator', LatexCalculator.as_view()),
     re_path('^simple-calculator', SimpleCalculator.as_view()),
+
+    path('api/login/', app_login, name='app_login'),
+    path('api/logout/', app_logout, name='app_logout'),
+    path('api/keycloak/', keycloak, name='keycloak'),
+    path('api/auth/', is_user_logged_in, name='is_user_logged_in'),
 ]
 
