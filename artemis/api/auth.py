@@ -86,7 +86,7 @@ def app_login(request):
         account.api_token_expiration = timezone.now() + timedelta(seconds=time) 
         account.save()
             
-        login(request, user, backend='app.auth_backend.PasswordlessAuthBackend')   
+        login(request, user, backend='artemis.auth_backend.PasswordlessAuthBackend')   
         return HttpResponse('django', status=200)
         
     return HttpResponse(status=400)

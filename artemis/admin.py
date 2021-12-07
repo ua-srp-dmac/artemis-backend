@@ -31,6 +31,14 @@ class ExtractionAdmin(admin.ModelAdmin):
         'site', 'collection_date', 'time_label', 'element', 'min_depth', 'max_depth'
     )
 
+class CyVerseAccountAdmin(admin.ModelAdmin):
+    list_display = (
+        'user', 'api_token_expiration',
+    )
+    search_fields = (
+        'user', 
+    )
+
 
 admin.site.register(Site, SiteAdmin)
 admin.site.register(Plot, PlotAdmin)
@@ -38,3 +46,4 @@ admin.site.register(Replicate, ReplicateAdmin)
 admin.site.register(Mineralogy, MineralogyAdmin)
 admin.site.register(Geochemistry, GeochemistryAdmin)
 admin.site.register(Extraction, ExtractionAdmin)
+admin.site.register(CyVerseAccount, CyVerseAccountAdmin)
